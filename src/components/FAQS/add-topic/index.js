@@ -34,7 +34,7 @@ const tailFormItemLayout = {
   },
 };
 
-const LabelCreateModal = ({
+const TopicCreateModal = ({
   isModalVisible,
   defaluValue,
   onClose,
@@ -53,8 +53,8 @@ const LabelCreateModal = ({
 
   const onFinish = (values) => {
     onSure({
-      title: values.label,
-      describe: values.describe,
+      name: values.label,
+      // describe: values.describe,
     });
     form.resetFields();
   };
@@ -68,7 +68,7 @@ const LabelCreateModal = ({
     <Modal
       visible={isModalVisible}
       footer={null}
-      title={defaluValue ? '编辑标签' : '创建标签'}
+      title={defaluValue ? '编辑话题' : '创建话题'}
       onCancel={onCancel}
     >
       <Form
@@ -80,11 +80,11 @@ const LabelCreateModal = ({
       >
         <Form.Item
           name="label"
-          label="标签名称"
+          label="话题名称"
           rules={[
             {
               required: true,
-              message: '请输入标签名',
+              message: '请输入话题',
               whitespace: true,
             },
           ]}
@@ -92,12 +92,12 @@ const LabelCreateModal = ({
           <Input />
         </Form.Item>
 
-        <Form.Item
+        {/* <Form.Item
           name="describe"
-          label="标签描述"
+          label="话题描述"
         >
           <Input />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item {...tailFormItemLayout}>
           <Button type="primary" htmlType="submit">
@@ -109,4 +109,4 @@ const LabelCreateModal = ({
   );
 };
 
-export default  LabelCreateModal;
+export default  TopicCreateModal;

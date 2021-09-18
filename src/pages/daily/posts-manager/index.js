@@ -1,67 +1,102 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'umi';
+import { getDailyPosts } from '@/services/daily';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Table, Space, Button, Modal, message, Input } from 'antd';
+import { Table, Space, Button, message } from 'antd';
+import PostCreateModal from '@/components/Daily/post-add';
+import PostDetails from '@/components/Daily/post-details';
+import OffLineModal from '@/components/Daily/offline-reson';
 import moment from 'moment';
-import styles from './index.less';
+import publicStyles from '@/pages/public.less';
 
-const { TextArea } = Input;
+const PostsManager = (props) => {
+  const { daily = {}, dispatch } = props;
+  const { posts, labels } = daily;
 
-const POST_STATUS = {
-  ON_LINE: '正常状态',
-  OFF_LINE: '被强制下线',
-};
+  const [isModalVisible, setShowModal] = useState(false);
+  const [currentEdit, setCurrentEdit] = useState(null);
 
-export default () => {
-  const dataSource = [
-    {
-      key: '1',
-      id: '123',
-      title: '帖子标题',
-      content: '这是帖子内容',
-      status: POST_STATUS.ON_LINE,
-      createTime: moment(),
-      createUser: {
-        userName: 'Bill',
-      },
-    },
-    {
-      key: '3',
-      id: '789',
-      title: '帖子标题',
-      content: '这是帖子内容',
-      status: POST_STATUS.OFF_LINE,
-      createTime: moment(),
-      createUser: {
-        userName: 'Cindy',
-      },
-    }
-  ];
+  const [isPrewing, setPrewing] = useState(false);
+  const [currentPrew, setCurrentPrew] = useState(false);
 
-  const previewAction = () => {
-    Modal.info({
-      icon: <div />,
-      content: <div style={{ width: 500, height: 300 }} className="post-details">这是帖子详情</div>
+
+  const [showOfflineModal, setShowOffLineModal] = useState();
+
+  useEffect(() => {
+    getDailyPosts(dispatch);
+    dispatch({
+      type: 'daily/getList',
+      payload: {},
     });
+  }, []);
+
+  const addAction = () => {
+    setShowModal(true);
   };
 
-  const editAction = () => {
+  const editAction = (item) => {
+    setCurrentEdit(item);
+    setShowModal(true);
+  };
 
+  const onCreateEditResult = (result) => {
+    setShowModal(false);
+    if (currentEdit) {
+      dispatch({
+        type: 'daipy/updatePost',
+        payload: {
+          ...currentEdit,
+          ...result,
+        },
+      });
+    } else {
+      dispatch({
+        type: 'daipy/addPost',
+        payload: {
+          ...result,
+          id: `000000${Math.ceil(Math.random() * 1000)}`,
+          status: 1,
+        },
+      });
+    }
+  };
+
+  const previewAction = (item) => {
+    setCurrentPrew(item);
+    setPrewing(true);
+  };
+
+  const onOfflineAction = (value) => {
+    dispatch({
+      type: 'daily/updatePost',
+      payload: {
+        ...currentEdit,
+        status: 0,
+        offLineReson: value.reson,
+      },
+    });
+    setShowOffLineModal(false);
+    message.success('提交成功');
   };
 
   const switchOnLineStatus = (item) => {
-    if (item.status === POST_STATUS.ON_LINE) {
-      Modal.info({
-        icon: <div />,
-        title: '请输入下架原因',
-        content: (
-          <TextArea className={styles.offerLineInput} rows={4} placeholder="请输入" />
-        ),
-      });
+    if (item.status === 1) {
+      setCurrentEdit(item);
+      setShowOffLineModal(true);
     } else {
+      dispatch({
+        type: 'daily/updatePost',
+        payload: {
+          ...item,
+          status: 1,
+          offLineReson: '',
+        },
+      })
       message.success('操作成功');
     }
   };
 
+  console.log(posts);
   const columns = [
     {
       title: '编号',
@@ -85,33 +120,21 @@ export default () => {
     {
       title: '状态',
       dataIndex: 'status',
-      render: (status) => {
-        switch (status) {
-          case POST_STATUS.ON_LINE:
-            return '正常';
-          case POST_STATUS.BLOCKED:
-            return '被举报';
-          case POST_STATUS.OFF_LINE:
-            return '已被强制下架';
-          default:
-            break;
-        }
-        return '';
-      },
+      render: (status) => status === 1 ? '正常' : '被下架',
     },
     {
       title: '操作',
       key: 'action',
       render: (item) => (
         <Space size="middle">
-          <Button type="text" style={{ padding: 0, color: 'blue' }} className="classify-tags__actions-edit" onClick={previewAction}>
+          <Button type="text" style={{ padding: 0, color: 'blue' }} className="classify-tags__actions-edit" onClick={() => previewAction(item)}>
             预览
           </Button>
-          <Button type="text" style={{ padding: 0, color: 'blue' }} className="classify-tags__actions-edit" onClick={editAction}>
+          <Button type="text" style={{ padding: 0, color: 'blue' }} className="classify-tags__actions-edit" onClick={() => editAction(item)}>
             编辑
           </Button>
           <Button type="text" style={{ padding: 0, color: 'blue' }} className="classify-tags__actions-edit" onClick={() => switchOnLineStatus(item)}>
-            {item.status === POST_STATUS.OFF_LINE ? '上架' : '下架'}
+            {item.status === 0 ? '上架' : '下架'}
           </Button>
         </Space>
       ),
@@ -122,11 +145,50 @@ export default () => {
     <PageContainer
       title="帖子管理"
     >
+      <div className={publicStyles.header}>
+        <Button className={publicStyles.addBtn} type="primary" onClick={addAction}>创建帖子</Button>
+      </div>
       <Table
-        rowKey="lableId"
+        rowKey="id"
         columns={columns}
-        dataSource={dataSource}
+        dataSource={posts}
+        pagination={{
+          current: 1,
+          pageSize: 10,
+          total: 100,
+        }}
+      />
+      <PostCreateModal
+        isModalVisible={isModalVisible}
+        defaluValue={currentEdit}
+        labels={labels}
+        users={[]}
+        onSure={onCreateEditResult}
+        onClose={() => {
+          setShowModal(false);
+          setCurrentEdit(null);
+        }}
+      />
+      <PostDetails
+        visible={isPrewing}
+        data={currentPrew}
+        onClose={() => {
+          setPrewing(false);
+          setCurrentPrew(null);
+        }}
+      />
+      <OffLineModal
+        visible={showOfflineModal}
+        onSure={onOfflineAction}
+        onClose={() => {
+          setShowOffLineModal(false);
+        }}
       />
     </PageContainer>
   );
 };
+
+export default connect(({ daily, loading }) => ({
+  daily,
+  loading: loading.effects['daily/getList'],
+}))(PostsManager);

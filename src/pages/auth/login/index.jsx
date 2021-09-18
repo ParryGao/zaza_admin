@@ -11,7 +11,6 @@ import { Alert, Space, message, Tabs } from 'antd';
 import React, { useState } from 'react';
 import ProForm, { ProFormCaptcha, ProFormCheckbox, ProFormText } from '@ant-design/pro-form';
 import { useIntl, connect, FormattedMessage } from 'umi';
-import { getFakeCaptcha } from '@/services/login';
 import styles from './index.less';
 
 const LoginMessage = ({ content }) => (
@@ -34,7 +33,7 @@ const Login = (props) => {
   const handleSubmit = (values) => {
     const { dispatch } = props;
     dispatch({
-      type: 'login/login',
+      type: 'user/login',
       payload: { ...values, type },
     });
   };
@@ -88,7 +87,7 @@ const Login = (props) => {
         {type === 'account' && (
           <>
             <ProFormText
-              name="userName"
+              name="username"
               fieldProps={{
                 size: 'large',
                 prefix: <UserOutlined className={styles.prefixIcon} />,
@@ -207,17 +206,17 @@ const Login = (props) => {
                   ),
                 },
               ]}
-              onGetCaptcha={async (mobile) => {
-                const result = await getFakeCaptcha(mobile);
+              // onGetCaptcha={async (mobile) => {
+              //   const result = await getFakeCaptcha(mobile);
 
-                if (result === false) {
-                  return;
-                }
+              //   if (result === false) {
+              //     return;
+              //   }
 
-                message.success(
-                  'Get the verification code successfully! The verification code is: 1234',
-                );
-              }}
+              //   message.success(
+              //     'Get the verification code successfully! The verification code is: 1234',
+              //   );
+              // }}
             />
           </>
         )}
@@ -248,7 +247,7 @@ const Login = (props) => {
   );
 };
 
-export default connect(({ login, loading }) => ({
-  userLogin: login,
-  submitting: loading.effects['login/login'],
+export default connect(({ user, loading }) => ({
+  userLogin: user,
+  submitting: loading.effects['user/login'],
 }))(Login);

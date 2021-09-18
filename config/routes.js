@@ -50,12 +50,6 @@ export default [
                     component: './daily/label-manager',
                     authority: ['admin'],
                   },
-                  {
-                    path: '/daily/report-manager',
-                    name: '举报管理',
-                    component: './daily/report-manager',
-                    authority: ['admin'],
-                  },
                 ],
               },
               {
@@ -79,12 +73,6 @@ export default [
                     path: '/faqs/topic-manager',
                     name: '话题管理',
                     component: './faqs/topic-manager',
-                    authority: ['admin'],
-                  },
-                  {
-                    path: '/faqs/report-manager',
-                    name: '举报管理',
-                    component: './faqs/report-manager',
                     authority: ['admin'],
                   },
                 ],
@@ -125,6 +113,12 @@ export default [
                     component: './other/hot-search',
                     authority: ['admin'],
                   },
+                  {
+                    path: '/other/report-manager',
+                    name: '举报管理',
+                    component: './other/report-manager',
+                    authority: ['admin'],
+                  },
                 ],
               },
               {
@@ -146,7 +140,6 @@ export default [
               //   path: '/list',
               //   component: './TableList',
               // },
-              
               {
                 component: './404',
               },

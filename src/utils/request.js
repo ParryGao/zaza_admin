@@ -1,6 +1,79 @@
 /** Request 网络请求工具 更详细的 api 文档: https://github.com/umijs/umi-request */
 import { extend } from 'umi-request';
 import { notification } from 'antd';
+import Cookies from 'js-cookie'
+
+export const endpoints = {
+  // auth & mine
+  signup: '/user',
+  login: '/login',
+  wechatLogin: '/login/weChat',
+  userInfo: '/user',
+  fansList: '/userFollow/fans',
+  followList: '/userFollow/idols',
+  userFollow: '/userFollow',
+  black: '/userBlack',
+  privateCfg: '/user/privateCfg',
+  notionCfg: '/user/notionCfg',
+  userOpinion: '/userOpinion',
+
+  // daily
+  post: '/post',
+  postRecommends: '/post/recommends',
+  postCollections: '/post/listCollection',
+  postTags: '/post/listTags',
+
+  // faqs
+  question: '/question',
+  topic: '/topic',
+  questionRecommends: '/question/recommend',
+  questionHot: '/question/hot',
+  questionFocus: '/question/focus',
+  focusQuestion: '/focusQuestion',
+  unFocusQuestion: '/unFocusQuestion',
+  answers: '/answer',
+  answerLike: '/answer/like',
+  answerDisLike: '/answer/disLike',
+  answerCollection: '/answer/collection',
+  answerDisCollection: '/answer/disCollection',
+  createReview: '/comment',
+  createReply: '/comment/second',
+  comment: '/comment/list',
+  subComment: '/comment/second/list',
+  commentLike: '/comment/like',
+  commentDisLike: '/comment/disLike',
+  subCommentLike: '/comment/second/like',
+  subCommentDisLike: '/comment/second/disLike',
+  myQuestions: '/QA/question',
+  myQALike: '/QA/like',
+  myQABrowse: '/QA/browse',
+  myQACollect: '/QA/collection',
+  faqsSearch: '/question/search',
+
+  // activity
+  activity: '/activity',
+
+  // coupon
+  coupon: '/coupon',
+  couponRecommend: '/coupon/recommend',
+  couponMyCollect: '/coupon/myCollection',
+  couponNear: '/coupon/near',
+  couponMyReceived: '/coupon/myReceived',
+  couponMyPost: '/coupon/myPost',
+  couponDetails: '/coupon/detail',
+  couponReceive: '/coupon/receive',
+  couponUse: '/coupon/use',
+  couponCollect: '/coupon/collection',
+};
+
+export const METHOD = {
+  POST: 'post',
+  GET: 'get',
+  PUT: 'put',
+  PATCH: 'patch',
+  DEL: 'delete',
+};
+
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
   201: '新建或修改数据成功。',
@@ -51,5 +124,32 @@ const request = extend({
   errorHandler,
   // default error handling
   credentials: 'include', // Does the default request bring cookies
+  headers: {
+    sessiontoken: Cookies.get('sessiontoken'),
+  },
 });
+
+request.use(async (ctx, next) => {
+  const { req } = ctx;
+  const { url, options } = req;
+  req.url = `/api${url}`
+  options.headers.sessiontoken = Cookies.get('sessiontoken');
+  // console.log(req, '::::', url, ',', options);
+  await next();
+  
+  // const { res } = ctx;
+  // console.log('res::::', res);
+});
+
+request.interceptors.response.use((response) => {
+  return response;
+  // if (!response.data) {
+  //   throw new Error('服务器异常，请稍后再试');
+  // }
+  // if (response.data.success !== 1) {
+  //   throw new Error(response.data.msg);
+  // }
+  // return Object.assign(response.data, { headers: response.headers });
+});
+
 export default request;

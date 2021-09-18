@@ -1,10 +1,14 @@
-import request from '@/utils/request';
-export async function query() {
-  return request('/api/users');
+import Request, { endpoints, METHOD } from '@/utils/request';
+
+export const userLogin = (params) => {
+  return Request(endpoints.login, {
+    method: METHOD.POST,
+    data: params,
+  });
 }
-export async function queryCurrent() {
-  return request('/api/currentUser');
-}
-export async function queryNotices() {
-  return request('/api/notices');
-}
+
+export const getUserProfile = () => {
+  return Request(endpoints.userInfo, {
+    method: METHOD.GET,
+  });
+};
